@@ -1,0 +1,14 @@
+:root {
+  --verde-manzana: #4CAF50;
+  --verde-oscuro: #2E7D32;
+}
+
+.btn-success {
+  background-color: var(--verde-manzana);
+  border-color: var(--verde-manzana);
+}
+
+.table-success th {
+  background-color: var(--verde-manzana);
+  color: white;
+}

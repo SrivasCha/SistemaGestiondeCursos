@@ -1,0 +1,90 @@
+HEAD
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+replay_pid*
+
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+77781cb (Primer commit - Subiendo backend del sistema de gestión de cursos)
+
+# Ignorar dependencias de Node.js (frontend)
+/frontend/node_modules
+/frontend/build # Si usas 'npm run build' o 'yarn build'
+/frontend/dist # Si usas Vite o alguna otra herramienta para la salida de producción
+.env # Archivos de entorno, que a menudo contienen credenciales
+
+# Ignorar dependencias de Maven/Gradle (backend)
+/backend/target/ # Para proyectos Maven
+/backend/build/ # Para proyectos Gradle
+.classpath
+.project
+.settings/
+*.iml # Archivos de IntelliJ IDEA
+.idea/ # Directorio de configuración de IntelliJ IDEA
+*.log
+*.class
+*.jar
+*.war
+*.zip
+*.rar
+
+# Ignorar archivos del sistema operativo
+.DS_Store # macOS
+Thumbs.db # Windows
+
+# Otros archivos que no quieras versionar
+*.log
+*.tmp
+*.swp
