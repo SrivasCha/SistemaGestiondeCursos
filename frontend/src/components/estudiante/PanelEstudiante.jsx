@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Table, Button, Modal, Form, Alert, Badge, Card, Nav, Tab } from "react-bootstrap";
 import api from "../../services/api";
-import { getToken, getRol, logout } from "../../services/authService";
+import { getToken, logout } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
 import '../../styles/PanelEstudiante.css';
 
@@ -13,7 +13,6 @@ const PanelEstudiante = () => {
   const [notas, setNotas] = useState([]);
   const [estadisticas, setEstadisticas] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showMatricularModal, setShowMatricularModal] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);

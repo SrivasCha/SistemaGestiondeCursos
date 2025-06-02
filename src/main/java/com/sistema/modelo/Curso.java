@@ -1,29 +1,43 @@
 package com.sistema.modelo;
 
 import jakarta.persistence.*;
+import lombok.*;
 import java.util.Set;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "cursos")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Curso {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nombre;
-    private int duracion;
+
+    private String descripcion;
+
+    private Integer duracion; // En horas o semanas
+
     private String horario;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profesor_id")
     private Profesor profesor;
 
-    @ManyToMany(mappedBy = "cursos")
+    @JsonIgnore
+    @ManyToMany(mappedBy = "cursos", fetch = FetchType.LAZY)
     private Set<Estudiante> estudiantes;
 
-    // --- Getters y Setters manuales ---
+    @JsonIgnore
+    @OneToMany(mappedBy = "curso", fetch = FetchType.LAZY)
+    private List<Nota> notas;
 
+    // Getters y Setters explícitos
     public Long getId() {
         return id;
     }
@@ -40,11 +54,19 @@ public class Curso {
         this.nombre = nombre;
     }
 
-    public int getDuracion() {
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public Integer getDuracion() {
         return duracion;
     }
 
-    public void setDuracion(int duracion) {
+    public void setDuracion(Integer duracion) {
         this.duracion = duracion;
     }
 
@@ -72,14 +94,12 @@ public class Curso {
         this.estudiantes = estudiantes;
     }
 
-    // --- Constructor sin relaciones (para usar desde el frontend si lo necesitas) ---
-    public Curso() {
+    public List<Nota> getNotas() {
+        return notas;
     }
 
-    public Curso(String nombre, int duracion, String horario) {
-        this.nombre = nombre;
-        this.duracion = duracion;
-        this.horario = horario;
+    public void setNotas(List<Nota> notas) {
+        this.notas = notas;
     }
 
     @Override
@@ -87,6 +107,7 @@ public class Curso {
         return "Curso{" +
                 "id=" + id +
                 ", nombre='" + nombre + '\'' +
+                ", descripcion='" + descripcion + '\'' +
                 ", duracion=" + duracion +
                 ", horario='" + horario + '\'' +
                 '}';

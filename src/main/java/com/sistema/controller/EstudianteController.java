@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/estudiantes")
+@RequestMapping("/api/estudiante")
 @CrossOrigin(origins = "http://localhost:5173")
 public class EstudianteController {
 
@@ -34,9 +34,9 @@ public class EstudianteController {
     private EstudianteRepository estudianteRepo;
 
     // Obtener información del estudiante actual
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @GetMapping("/perfil")
-    public ResponseEntity<Estudiante> obtenerPerfil(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Map<String, Object>> obtenerPerfil(@AuthenticationPrincipal UserDetails userDetails) {
         try {
             Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -44,17 +44,30 @@ public class EstudianteController {
             Estudiante estudiante = estudianteRepo.findByUsuario(usuario)
                 .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
             
-            return ResponseEntity.ok(estudiante);
+            // Crear mapa con la información del estudiante
+            Map<String, Object> perfilInfo = new HashMap<>();
+            perfilInfo.put("id", estudiante.getId());
+            perfilInfo.put("nombre", estudiante.getNombre());
+            perfilInfo.put("apellido", estudiante.getApellido());
+            perfilInfo.put("direccion", estudiante.getDireccion());
+            perfilInfo.put("telefono", estudiante.getTelefono());
+            perfilInfo.put("fotoPerfil", estudiante.getFotoPerfil());
+            perfilInfo.put("fechaNacimiento", estudiante.getFechaNacimiento());
+            perfilInfo.put("numeroIdentificacion", estudiante.getNumeroIdentificacion());
+            perfilInfo.put("email", usuario.getEmail());
+            
+            return ResponseEntity.ok(perfilInfo);
         } catch (Exception e) {
+            System.err.println("Error al obtener perfil: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
     // Actualizar perfil del estudiante
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @PutMapping("/perfil")
-    public ResponseEntity<Estudiante> actualizarPerfil(
-            @RequestBody Estudiante estudianteActualizado,
+    public ResponseEntity<Map<String, Object>> actualizarPerfil(
+            @RequestBody Map<String, Object> datosActualizacion,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername())
@@ -64,21 +77,43 @@ public class EstudianteController {
                 .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
             
             // Actualizar solo los campos permitidos
-            estudiante.setNombre(estudianteActualizado.getNombre());
-            estudiante.setApellido(estudianteActualizado.getApellido());
-            estudiante.setDireccion(estudianteActualizado.getDireccion());
-            estudiante.setTelefono(estudianteActualizado.getTelefono());
-            estudiante.setFotoPerfil(estudianteActualizado.getFotoPerfil());
+            if (datosActualizacion.containsKey("nombre")) {
+                estudiante.setNombre((String) datosActualizacion.get("nombre"));
+            }
+            if (datosActualizacion.containsKey("apellido")) {
+                estudiante.setApellido((String) datosActualizacion.get("apellido"));
+            }
+            if (datosActualizacion.containsKey("direccion")) {
+                estudiante.setDireccion((String) datosActualizacion.get("direccion"));
+            }
+            if (datosActualizacion.containsKey("telefono")) {
+                estudiante.setTelefono((String) datosActualizacion.get("telefono"));
+            }
+            if (datosActualizacion.containsKey("fotoPerfil")) {
+                estudiante.setFotoPerfil((String) datosActualizacion.get("fotoPerfil"));
+            }
             
             Estudiante estudianteGuardado = estudianteService.guardar(estudiante);
-            return ResponseEntity.ok(estudianteGuardado);
+            
+            // Retornar información actualizada
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", estudianteGuardado.getId());
+            response.put("nombre", estudianteGuardado.getNombre());
+            response.put("apellido", estudianteGuardado.getApellido());
+            response.put("direccion", estudianteGuardado.getDireccion());
+            response.put("telefono", estudianteGuardado.getTelefono());
+            response.put("fotoPerfil", estudianteGuardado.getFotoPerfil());
+            response.put("mensaje", "Perfil actualizado correctamente");
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
+            System.err.println("Error al actualizar perfil: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
     // Obtener cursos matriculados del estudiante
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @GetMapping("/mis-cursos")
     public ResponseEntity<List<Map<String, Object>>> obtenerMisCursos(@AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -95,21 +130,29 @@ public class EstudianteController {
                     cursoInfo.put("nombre", curso.getNombre());
                     cursoInfo.put("duracion", curso.getDuracion());
                     cursoInfo.put("horario", curso.getHorario());
-                    cursoInfo.put("profesor", curso.getProfesor() != null ? curso.getProfesor().getNombre() : "Sin asignar");
+                    cursoInfo.put("descripcion", curso.getDescripcion());
+                    if (curso.getProfesor() != null) {
+                        cursoInfo.put("profesor", curso.getProfesor().getNombreCompleto());
+                        cursoInfo.put("profesorId", curso.getProfesor().getId());
+                    } else {
+                        cursoInfo.put("profesor", "Sin asignar");
+                        cursoInfo.put("profesorId", null);
+                    }
                     return cursoInfo;
                 })
                 .collect(Collectors.toList());
             
             return ResponseEntity.ok(cursosInfo);
         } catch (Exception e) {
+            System.err.println("Error al obtener cursos: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
     // Obtener cursos disponibles para matricularse
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @GetMapping("/cursos-disponibles")
-    public ResponseEntity<List<Curso>> obtenerCursosDisponibles(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<Map<String, Object>>> obtenerCursosDisponibles(@AuthenticationPrincipal UserDetails userDetails) {
         try {
             Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -118,14 +161,33 @@ public class EstudianteController {
                 .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
             
             List<Curso> cursosDisponibles = estudianteService.obtenerCursosDisponibles(estudiante.getId());
-            return ResponseEntity.ok(cursosDisponibles);
+            
+            List<Map<String, Object>> cursosInfo = cursosDisponibles.stream()
+                .map(curso -> {
+                    Map<String, Object> cursoInfo = new HashMap<>();
+                    cursoInfo.put("id", curso.getId());
+                    cursoInfo.put("nombre", curso.getNombre());
+                    cursoInfo.put("duracion", curso.getDuracion());
+                    cursoInfo.put("horario", curso.getHorario());
+                    cursoInfo.put("descripcion", curso.getDescripcion());
+                    if (curso.getProfesor() != null) {
+                        cursoInfo.put("profesor", curso.getProfesor().getNombre() + " " + curso.getProfesor().getApellido());
+                    } else {
+                        cursoInfo.put("profesor", "Sin asignar");
+                    }
+                    return cursoInfo;
+                })
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(cursosInfo);
         } catch (Exception e) {
+            System.err.println("Error al obtener cursos disponibles: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
     // Matricularse en un curso
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @PostMapping("/matricular/{cursoId}")
     public ResponseEntity<Map<String, String>> matricularEnCurso(
             @PathVariable Long cursoId,
@@ -150,15 +212,16 @@ public class EstudianteController {
                 return ResponseEntity.badRequest().body(response);
             }
         } catch (Exception e) {
+            System.err.println("Error al matricular: " + e.getMessage());
             Map<String, String> response = new HashMap<>();
-            response.put("mensaje", "Error interno del servidor");
+            response.put("mensaje", "Error interno del servidor: " + e.getMessage());
             response.put("status", "error");
             return ResponseEntity.badRequest().body(response);
         }
     }
 
     // Desmatricularse de un curso
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @DeleteMapping("/desmatricular/{cursoId}")
     public ResponseEntity<Map<String, String>> desmatricularDeCurso(
             @PathVariable Long cursoId,
@@ -183,15 +246,16 @@ public class EstudianteController {
                 return ResponseEntity.badRequest().body(response);
             }
         } catch (Exception e) {
+            System.err.println("Error al desmatricular: " + e.getMessage());
             Map<String, String> response = new HashMap<>();
-            response.put("mensaje", "Error interno del servidor");
+            response.put("mensaje", "Error interno del servidor: " + e.getMessage());
             response.put("status", "error");
             return ResponseEntity.badRequest().body(response);
         }
     }
 
     // Obtener calificaciones del estudiante
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @GetMapping("/mis-notas")
     public ResponseEntity<List<Map<String, Object>>> obtenerMisNotas(@AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -219,12 +283,13 @@ public class EstudianteController {
             
             return ResponseEntity.ok(notasInfo);
         } catch (Exception e) {
+            System.err.println("Error al obtener notas: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
     // Obtener promedio de notas
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @GetMapping("/promedio")
     public ResponseEntity<Map<String, Object>> obtenerPromedio(@AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -237,18 +302,19 @@ public class EstudianteController {
             Double promedio = estudianteService.calcularPromedioNotas(estudiante.getId());
             
             Map<String, Object> response = new HashMap<>();
-            response.put("promedio", promedio);
+            response.put("promedio", promedio != null ? promedio : 0.0);
             response.put("estudianteId", estudiante.getId());
-            response.put("estudiante", estudiante.getNombreCompleto());
+            response.put("estudiante", estudiante.getNombre() + " " + estudiante.getApellido());
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            System.err.println("Error al obtener promedio: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
     // Obtener estadísticas del estudiante
-    @PreAuthorize("hasRole('ESTUDIANTE')")
+    @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
     @GetMapping("/estadisticas")
     public ResponseEntity<Map<String, Object>> obtenerEstadisticas(@AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -258,19 +324,21 @@ public class EstudianteController {
             Estudiante estudiante = estudianteRepo.findByUsuario(usuario)
                 .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
             
-            int totalCursos = estudiante.getCursos().size();
+            int totalCursos = estudiante.getCursos() != null ? estudiante.getCursos().size() : 0;
             List<Nota> notas = notaService.buscarPorEstudiante(estudiante);
-            int totalNotas = notas.size();
+            int totalNotas = notas != null ? notas.size() : 0;
             Double promedio = estudianteService.calcularPromedioNotas(estudiante.getId());
             
             Map<String, Object> estadisticas = new HashMap<>();
             estadisticas.put("totalCursos", totalCursos);
             estadisticas.put("totalNotas", totalNotas);
-            estadisticas.put("promedio", promedio);
-            estadisticas.put("estudianteNombre", estudiante.getNombreCompleto());
+            estadisticas.put("promedio", promedio != null ? promedio : 0.0);
+            estadisticas.put("estudianteNombre", estudiante.getNombre() + " " + estudiante.getApellido());
+            estadisticas.put("estudianteId", estudiante.getId());
             
             return ResponseEntity.ok(estadisticas);
         } catch (Exception e) {
+            System.err.println("Error al obtener estadísticas: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
