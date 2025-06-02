@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "estudiantes")
 @Getter
 @Setter
-@NoArgsConstructor // ✅ Necesario para que POST funcione
+@NoArgsConstructor
 @AllArgsConstructor
 public class Estudiante {
 
@@ -26,24 +26,33 @@ public class Estudiante {
     @Column(nullable = false, unique = true)
     private String email;
 
+    private String direccion;
+    
+    private String telefono;
+
+    private String fotoPerfil; // Nuevo campo para foto de perfil
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "estudiante_curso",
         joinColumns = @JoinColumn(name = "estudiante_id"),
         inverseJoinColumns = @JoinColumn(name = "curso_id"))
-    @JsonIgnore // ⬅️ Evita que GET falle por Lazy Loading
     private Set<Curso> cursos;
 
     @OneToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-
     // Constructor personalizado para POST
     public Estudiante(String nombre, String apellido, String email) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
+    }
+
+    // Método para obtener nombre completo
+    public String getNombreCompleto() {
+        return this.nombre + " " + this.apellido;
     }
 
     @Override

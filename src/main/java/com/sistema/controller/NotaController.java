@@ -4,7 +4,10 @@ import com.sistema.modelo.*;
 import com.sistema.repository.*;
 import com.sistema.service.NotaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
@@ -54,4 +57,13 @@ public class NotaController {
     public void eliminarNota(@PathVariable Long id) {
         notaService.eliminarNota(id);
     }
+
+    @PreAuthorize("hasRole('ESTUDIANTE')")
+@GetMapping("/mis-notas")
+public ResponseEntity<List<Nota>> obtenerMisNotas(@AuthenticationPrincipal Usuario usuario) {
+    Estudiante estudiante = estudianteRepo.findByUsuario(usuario)
+        .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
+    return ResponseEntity.ok(notaService.buscarPorEstudiante(estudiante));
+}
+
 }
