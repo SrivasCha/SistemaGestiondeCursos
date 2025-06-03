@@ -4,6 +4,7 @@ import api from "../../services/api";
 import { getToken, getRol, logout } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
 import '../../styles/PanelAdmin.css'; // Importar estilos personalizados
+import { toast } from 'react-toastify'; // Asegúrate de importar toast si lo usas
 
 const PanelAdmin = () => {
   const [users, setUsers] = useState([]);
@@ -48,9 +49,11 @@ const PanelAdmin = () => {
       setShowModal(false);
       setFormData({ nombre: "", duracion: "", horario: "" });
       fetchData();
+      toast.success("Curso creado exitosamente!");
     } catch (error) {
       console.error("Error creando curso:", error);
       setError("Error creando curso. " + (error.response?.data?.message || error.message));
+      toast.error("Error creando curso.");
     }
   };
 
@@ -67,9 +70,11 @@ const PanelAdmin = () => {
       setShowEditModal(false);
       setEditFormData({ id: null, nombre: "", duracion: "", horario: "" });
       fetchData();
+      toast.success("Curso actualizado exitosamente!");
     } catch (error) {
       console.error("Error actualizando curso:", error);
       setError("Error actualizando curso. " + (error.response?.data?.message || error.message));
+      toast.error("Error actualizando curso.");
     }
   };
 
@@ -80,11 +85,14 @@ const PanelAdmin = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await api.delete(`api/curso/${id}`, config);
       fetchData();
+      toast.success("Curso eliminado exitosamente!");
     } catch (error) {
       console.error("Error eliminando curso:", error);
       setError("Error eliminando curso. " + (error.response?.data?.message || error.message));
+      toast.error("Error eliminando curso.");
     }
   };
+
 
   const handleCreateUser = async () => {
     try {

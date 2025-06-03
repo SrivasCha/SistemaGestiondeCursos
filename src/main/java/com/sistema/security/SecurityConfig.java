@@ -25,7 +25,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // Asegura que @PreAuthorize funcione
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -40,38 +40,50 @@ public class SecurityConfig {
             .cors(customizer -> customizer.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Rutas que no requieren autenticación
-                .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Para pre-vuelos CORS
-                .requestMatchers("/uploads/**").permitAll() // ✅ Permitir acceso a archivos subidos (ej. fotos de perfil)
+                // ✅ ORDEN CRÍTICO: Las rutas más específicas SIEMPRE van primero
+                
+                // 1. Rutas públicas de autenticación
+                .requestMatchers("/api/auth/**").permitAll()
+                
+                // 2. ⭐ CRÍTICO: Registro solo para ADMIN - DEBE ir antes de /api/admin/**
+                .requestMatchers(HttpMethod.POST, "/api/auth/register").hasRole("ADMIN")
+                
+                // 3. Otras rutas específicas de auth (si existen)
+                .requestMatchers("/api/auth/**").permitAll() // Solo si tienes otras rutas públicas
+                
+                // 4. Pre-vuelos CORS (muy importante para frontend)
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // 5. Consola H2 para desarrollo (eliminar en producción)
+                .requestMatchers("/h2-console/**").permitAll()
+                
+                // 6. Archivos estáticos
+                .requestMatchers("/uploads/**").permitAll()
 
-                // ✅ Rutas específicas para el Panel de Estudiante (accede a SU PROPIA información)
-                // Usamos el prefijo /api/estudiante/ para todo lo relacionado con el panel del estudiante logueado
+                // 7. ⭐ Rutas específicas por rol - MÁS ESPECÍFICAS PRIMERO
+                
+                // Panel de estudiante (rutas específicas)
                 .requestMatchers("/api/estudiante/**").hasRole("ESTUDIANTE")
                 
-                // ✅ Rutas de administración para gestionar estudiantes (accede a información de TODOS los estudiantes)
-                // Estas rutas serán para el rol ADMIN. Las específicas de ESTUDIANTE del bloque anterior ya no son necesarias aquí si se consolidan.
+                // Gestión de estudiantes (ADMIN)
                 .requestMatchers("/api/estudiantes/**").hasRole("ADMIN") 
-
-                // Rutas de administración general
+                
+                // Panel de administración
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
-                // Rutas para profesores
+                // Panel de profesores
                 .requestMatchers("/api/profesor/**").hasRole("PROFESOR")
                 
-                // Rutas de notas: permitidas para Estudiantes, Admin y Profesores
-                // Si /api/notas/mis-notas es solo para ESTUDIANTE, ya está cubierta por /api/estudiante/** si está dentro de ese prefijo.
-                // Si /api/notas/estudiante es para ver notas de UN estudiante por ADMIN/PROFESOR, debe ser más específica o consolidarse.
-                // Para simplificar, si /api/notas/** es para múltiples roles:
+                // 8. Rutas de notas (múltiples roles)
                 .requestMatchers("/api/notas/**").hasAnyRole("ESTUDIANTE", "ADMIN", "PROFESOR")
 
-                // Configuración para cursos (ajusta si tus APIs son diferentes)
-                .requestMatchers(HttpMethod.GET, "/api/curso/**").permitAll() // Cualquiera puede ver cursos
-                .requestMatchers(HttpMethod.POST, "/api/curso").hasAnyRole("ADMIN", "PROFESOR") // Crear cursos
-                .requestMatchers(HttpMethod.PUT, "/api/curso/**").hasAnyRole("ADMIN", "PROFESOR") // Actualizar cursos
-                .requestMatchers(HttpMethod.DELETE, "/api/curso/**").hasAnyRole("ADMIN", "PROFESOR") // Eliminar cursos
+                // 9. Rutas de cursos por método HTTP
+                .requestMatchers(HttpMethod.GET, "/api/curso/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/curso/**").hasAnyRole("ADMIN", "PROFESOR")
+                .requestMatchers(HttpMethod.PUT, "/api/curso/**").hasAnyRole("ADMIN", "PROFESOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/curso/**").hasAnyRole("ADMIN", "PROFESOR")
                 
-                // Cualquier otra petición requiere autenticación
+                // 10. Cualquier otra petición requiere autenticación
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -84,7 +96,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Asegúrate que esta URL sea la de tu frontend
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

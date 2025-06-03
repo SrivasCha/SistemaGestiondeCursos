@@ -1,18 +1,14 @@
 package com.sistema.modelo;
 
 import jakarta.persistence.*;
-import lombok.*;
-import java.util.Set;
-import java.util.List;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "estudiantes")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Estudiante {
 
     @Id
@@ -37,7 +33,7 @@ public class Estudiante {
 
     private LocalDate fechaNacimiento;
 
-    private String fotoPerfil; // Campo para foto de perfil
+    private String fotoPerfil;
 
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
@@ -45,32 +41,49 @@ public class Estudiante {
         name = "estudiante_curso",
         joinColumns = @JoinColumn(name = "estudiante_id"),
         inverseJoinColumns = @JoinColumn(name = "curso_id"))
-    private Set<Curso> cursos;
+    private Set<Curso> cursos = new HashSet<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "estudiante", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "estudiante", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Nota> notas;
 
     @OneToOne
-    @JoinColumn(name = "usuario_id")
+    @JoinColumn(name = "usuario_id", unique = true)
     private Usuario usuario;
 
-    // Constructor personalizado para POST
-    public Estudiante(String nombre, String apellido, String email) {
+    // Constructor vacío
+    public Estudiante() {
+        this.cursos = new HashSet<>();
+    }
+
+    // Constructor personalizado para la creación de Estudiante desde el UsuarioService
+    public Estudiante(String nombre, String apellido, String email, Usuario usuario) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
+        this.usuario = usuario;
+        this.cursos = new HashSet<>();
     }
 
-    // Constructor adicional con número de identificación
+    // Constructor adicional para POST
     public Estudiante(String nombre, String apellido, String email, String numeroIdentificacion) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
         this.numeroIdentificacion = numeroIdentificacion;
+        this.cursos = new HashSet<>();
     }
 
-    // Getters y Setters explícitos (para asegurar compatibilidad)
+    // Constructor original para POST
+    public Estudiante(String nombre, String apellido, String email) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.cursos = new HashSet<>();
+    }
+
+    // Getters y Setters explícitos
+
     public Long getId() {
         return id;
     }
@@ -180,6 +193,7 @@ public class Estudiante {
                 ", apellido='" + apellido + '\'' +
                 ", email='" + email + '\'' +
                 ", numeroIdentificacion='" + numeroIdentificacion + '\'' +
+                (usuario != null ? ", usuarioId=" + usuario.getId() : "") +
                 '}';
     }
 }
