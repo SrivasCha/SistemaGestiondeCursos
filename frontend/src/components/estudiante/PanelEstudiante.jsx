@@ -16,6 +16,11 @@ const PanelEstudiante = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Estados para manejo de imágenes
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  
   const [editFormData, setEditFormData] = useState({
     nombre: "",
     apellido: "",
@@ -24,6 +29,175 @@ const PanelEstudiante = () => {
     fotoPerfil: ""
   });
   const navigate = useNavigate();
+
+  // ================================
+  // FUNCIÓN DE REDIMENSIONAMIENTO DE IMÁGENES
+  // ================================
+  const resizeImage = (file, maxWidth = 300, maxHeight = 300, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+      // Crear elementos necesarios
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      // Manejar errores
+      img.onerror = () => reject(new Error('Error cargando la imagen'));
+      
+      img.onload = () => {
+        try {
+          // Obtener dimensiones originales
+          let { width, height } = img;
+          
+          console.log(`Dimensiones originales: ${width}x${height}`);
+          
+          // Calcular nuevas dimensiones manteniendo la proporción
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height;
+              height = maxHeight;
+            }
+          }
+          
+          console.log(`Nuevas dimensiones: ${Math.round(width)}x${Math.round(height)}`);
+          
+          // Configurar canvas con nuevas dimensiones
+          canvas.width = Math.round(width);
+          canvas.height = Math.round(height);
+          
+          // Mejorar calidad del redimensionamiento
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          
+          // Dibujar imagen redimensionada en el canvas
+          ctx.drawImage(img, 0, 0, Math.round(width), Math.round(height));
+          
+          // Convertir a base64 con compresión
+          const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+          
+          // Calcular tamaños para logging
+          const originalSize = file.size;
+          const compressedSize = (compressedBase64.length * 3) / 4;
+          
+          console.log(`Tamaño original: ${(originalSize / 1024 / 1024).toFixed(2)} MB`);
+          console.log(`Tamaño comprimido: ${(compressedSize / 1024 / 1024).toFixed(2)} MB`);
+          console.log(`Reducción: ${(((originalSize - compressedSize) / originalSize) * 100).toFixed(1)}%`);
+          
+          resolve(compressedBase64);
+          
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      // Cargar la imagen
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  // ================================
+  // FUNCIÓN PARA MANEJAR CAMBIO DE IMAGEN
+  // ================================
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    
+    if (!file) return;
+    
+    try {
+      // ========== VALIDACIONES ==========
+      console.log('Archivo seleccionado:', file.name, 'Tipo:', file.type, 'Tamaño:', file.size);
+      
+      // Validar que sea una imagen
+      if (!file.type.startsWith('image/')) {
+        alert('❌ Por favor selecciona un archivo de imagen válido (JPG, PNG, GIF, etc.)');
+        return;
+      }
+      
+      // Validar tamaño original (máximo 10MB para procesar)
+      const maxSizeForProcessing = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSizeForProcessing) {
+        alert('❌ La imagen es muy grande para procesar. Por favor selecciona una imagen menor a 10MB');
+        return;
+      }
+      
+      // ========== PROCESAMIENTO ==========
+      setIsProcessingImage(true); // Mostrar loading
+      
+      console.log('🔄 Iniciando procesamiento de imagen...');
+      
+      // Configuración de compresión (puedes ajustar estos valores)
+      const config = {
+        maxWidth: 400,      // Ancho máximo en píxeles
+        maxHeight: 400,     // Alto máximo en píxeles  
+        quality: 0.85       // Calidad JPEG (0.1 = muy comprimida, 1.0 = sin comprimir)
+      };
+      
+      // Procesar imagen
+      const compressedImage = await resizeImage(file, config.maxWidth, config.maxHeight, config.quality);
+      
+      // ========== VALIDACIÓN FINAL ==========
+      // Verificar que el resultado no sea demasiado grande
+      const finalSizeBytes = (compressedImage.length * 3) / 4;
+      const finalSizeMB = finalSizeBytes / (1024 * 1024);
+      
+      if (finalSizeMB > 2) { // Si es mayor a 2MB después de comprimir
+        const proceed = window.confirm(
+          `⚠️ La imagen comprimida sigue siendo grande (${finalSizeMB.toFixed(2)} MB).\n` +
+          'Esto podría causar problemas al guardar.\n\n' +
+          '¿Deseas continuar o seleccionar otra imagen?'
+        );
+        
+        if (!proceed) {
+          setIsProcessingImage(false);
+          return;
+        }
+      }
+      
+      // ========== GUARDAR RESULTADO ==========
+      // Actualizar preview
+      setImagePreview(compressedImage);
+      
+      // Actualizar estado del formulario
+      setEditFormData({ 
+        ...editFormData, 
+        fotoPerfil: compressedImage
+      });
+      
+      console.log('✅ Imagen procesada exitosamente');
+      
+    } catch (error) {
+      console.error('❌ Error procesando imagen:', error);
+      alert('Error al procesar la imagen. Por favor intenta con otra imagen o una más pequeña.');
+      
+      // Limpiar en caso de error
+      setImagePreview(null);
+      setEditFormData({ ...editFormData, fotoPerfil: '' });
+      
+    } finally {
+      setIsProcessingImage(false); // Ocultar loading
+    }
+  };
+
+  // ================================
+  // FUNCIÓN PARA LIMPIAR IMAGEN
+  // ================================
+  const clearImage = () => {
+    setImagePreview(null);
+    setEditFormData({ ...editFormData, fotoPerfil: '' });
+    setIsProcessingImage(false); // Limpiar estado de loading
+    
+    // Limpiar el input file
+    const fileInput = document.getElementById('profile-image-input');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    
+    console.log('🗑️ Imagen eliminada');
+  };
 
   useEffect(() => {
     cargarDatosIniciales();
@@ -60,6 +234,7 @@ const PanelEstudiante = () => {
         telefono: response.data.telefono || "",
         fotoPerfil: response.data.fotoPerfil || ""
       });
+      // No establecer imagePreview aquí para evitar confusión con imágenes nuevas
     } catch (error) {
       console.error("Error cargando perfil:", error);
     }
@@ -109,22 +284,39 @@ const PanelEstudiante = () => {
     }
   };
 
-  const handleUpdatePerfil = async () => {
-    try {
-      setLoading(true);
-      const token = getToken();
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await api.put("/api/estudiante/perfil", editFormData, config);
-      setShowEditModal(false);
-      setSuccess("Perfil actualizado exitosamente");
-      await cargarPerfil();
-    } catch (error) {
-      console.error("Error actualizando perfil:", error);
-      setError("Error actualizando el perfil");
-    } finally {
-      setLoading(false);
+const handleUpdatePerfil = async () => {
+  try {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("nombre", editFormData.nombre);
+    formData.append("apellido", editFormData.apellido);
+    formData.append("direccion", editFormData.direccion);
+    formData.append("telefono", editFormData.telefono);
+    
+    if (editFormData.fotoPerfil instanceof File) {
+      formData.append("fotoPerfil", editFormData.fotoPerfil); // el campo debe ser tipo File
     }
-  };
+
+    const token = getToken();
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    await api.put("/api/estudiante/perfil", formData, config);
+    setSuccess("Perfil actualizado exitosamente");
+    setShowEditModal(false);
+    await cargarPerfil();
+  } catch (error) {
+    console.error("Error actualizando perfil:", error);
+    setError("Error actualizando el perfil");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleMatricular = async (cursoId) => {
     try {
@@ -843,18 +1035,69 @@ const PanelEstudiante = () => {
               <Form.Group className="mb-3">
                 <Form.Label className="form-label-custom">
                   <i className="fas fa-image me-2"></i>
-                  URL Foto de Perfil (Opcional)
+                  Foto de Perfil (Opcional)
                 </Form.Label>
+                
                 <Form.Control
-                  type="url"
+                  id="profile-image-input"
+                  type="file"
                   className="form-control-custom"
-                  placeholder="https://ejemplo.com/tu-foto.jpg"
-                  value={editFormData.fotoPerfil}
-                  onChange={(e) => setEditFormData({ ...editFormData, fotoPerfil: e.target.value })}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  disabled={isProcessingImage} // Deshabilitar mientras procesa
                 />
+                
                 <Form.Text className="text-muted">
-                  Ingresa la URL de tu foto de perfil. Debe ser una imagen válida.
+                  Selecciona una imagen desde tu dispositivo. Se redimensionará automáticamente para optimizar el tamaño.
+                  <br />
+                  <small><strong>Formatos soportados:</strong> JPG, PNG, GIF | <strong>Tamaño máximo:</strong> 10MB</small>
                 </Form.Text>
+                
+                {/* Indicador de loading */}
+                {isProcessingImage && (
+                  <div className="mt-2">
+                    <div className="d-flex align-items-center text-info">
+                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                        <span className="visually-hidden">Cargando...</span>
+                      </div>
+                      <small>Procesando imagen, por favor espera...</small>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Preview de la imagen */}
+                {(imagePreview || editFormData.fotoPerfil) && !isProcessingImage && (
+                  <div className="mt-3">
+                    <div className="d-flex align-items-center gap-3">
+                      <img
+                        src={imagePreview || editFormData.fotoPerfil}
+                        alt="Preview"
+                        style={{
+                          width: '100px',
+                          height: '100px',
+                          objectFit: 'cover',
+                          borderRadius: '50%',
+                          border: '2px solid #dee2e6',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                      <div className="d-flex flex-column gap-2">
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={clearImage}
+                          disabled={isProcessingImage}
+                        >
+                          <i className="fas fa-trash me-1"></i>
+                          Eliminar imagen
+                        </Button>
+                        <small className="text-muted">
+                          Imagen optimizada y lista para guardar
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </Form.Group>
             </Form>
           </Modal.Body>

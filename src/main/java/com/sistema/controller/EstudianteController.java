@@ -4,12 +4,19 @@ import com.sistema.modelo.*;
 import com.sistema.service.*;
 import com.sistema.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,37 +72,45 @@ public class EstudianteController {
 
     // Actualizar perfil del estudiante
     @PreAuthorize("hasRole('ROLE_ESTUDIANTE')")
-    @PutMapping("/perfil")
+    @PutMapping(value = "/perfil", consumes = "multipart/form-data")
     public ResponseEntity<Map<String, Object>> actualizarPerfil(
-            @RequestBody Map<String, Object> datosActualizacion,
+            @RequestParam("nombre") String nombre,
+            @RequestParam("apellido") String apellido,
+            @RequestParam("direccion") String direccion,
+            @RequestParam("telefono") String telefono,
+            @RequestParam(value = "fotoPerfil", required = false) MultipartFile fotoPerfil,
             @AuthenticationPrincipal UserDetails userDetails) {
+
         try {
             Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-            
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
             Estudiante estudiante = estudianteRepo.findByUsuario(usuario)
-                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
-            
-            // Actualizar solo los campos permitidos
-            if (datosActualizacion.containsKey("nombre")) {
-                estudiante.setNombre((String) datosActualizacion.get("nombre"));
+                    .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
+
+            // Actualizar datos personales
+            estudiante.setNombre(nombre);
+            estudiante.setApellido(apellido);
+            estudiante.setDireccion(direccion);
+            estudiante.setTelefono(telefono);
+
+            // Guardar imagen si se envía
+            if (fotoPerfil != null && !fotoPerfil.isEmpty()) {
+                String nombreArchivo = UUID.randomUUID() + "_" + fotoPerfil.getOriginalFilename();
+                Path rutaDestino = Paths.get("uploads").resolve(nombreArchivo).normalize();
+                try {
+                    Files.createDirectories(rutaDestino.getParent());
+                    Files.copy(fotoPerfil.getInputStream(), rutaDestino, StandardCopyOption.REPLACE_EXISTING);
+                    estudiante.setFotoPerfil(nombreArchivo); // Guardar solo el nombre en DB
+                } catch (IOException e) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(Map.of("error", "Error al guardar la imagen"));
+                }
             }
-            if (datosActualizacion.containsKey("apellido")) {
-                estudiante.setApellido((String) datosActualizacion.get("apellido"));
-            }
-            if (datosActualizacion.containsKey("direccion")) {
-                estudiante.setDireccion((String) datosActualizacion.get("direccion"));
-            }
-            if (datosActualizacion.containsKey("telefono")) {
-                estudiante.setTelefono((String) datosActualizacion.get("telefono"));
-            }
-            if (datosActualizacion.containsKey("fotoPerfil")) {
-                estudiante.setFotoPerfil((String) datosActualizacion.get("fotoPerfil"));
-            }
-            
+
             Estudiante estudianteGuardado = estudianteService.guardar(estudiante);
-            
-            // Retornar información actualizada
+
+            // Respuesta
             Map<String, Object> response = new HashMap<>();
             response.put("id", estudianteGuardado.getId());
             response.put("nombre", estudianteGuardado.getNombre());
@@ -104,11 +119,12 @@ public class EstudianteController {
             response.put("telefono", estudianteGuardado.getTelefono());
             response.put("fotoPerfil", estudianteGuardado.getFotoPerfil());
             response.put("mensaje", "Perfil actualizado correctamente");
-            
+
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            System.err.println("Error al actualizar perfil: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
