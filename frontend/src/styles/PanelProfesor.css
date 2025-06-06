@@ -1,0 +1,373 @@
+/* ===================================================================
+   VARIABLES CSS MEJORADAS Y EXPANDIDAS
+   =================================================================== */
+:root {
+    /* Colores principales */
+    --primary-50: #f3f8f3;
+    --primary-100: #e8f5e8;
+    --primary-200: #c8e6c9;
+    --primary-300: #a5d6a7;
+    --primary-400: #81c784;
+    --primary-500: #4caf50; /* Verde principal */
+    --primary-600: #43a047;
+    --primary-700: #388e3c;
+    --primary-800: #2e7d32;
+    --primary-900: #1b5e20;
+
+    /* Colores de estado */
+    --success-50: #f0f9ff;
+    --success-500: #10b981;
+    --success-600: #059669;
+    --info-50: #eff6ff;
+    --info-500: #3b82f6; /* Azul para información */
+    --info-600: #2563eb;
+    --warning-50: #fffbeb;
+    --warning-500: #f59e0b; /* Naranja para advertencia */
+    --warning-600: #d97706;
+    --danger-50: #fef2f2;
+    --danger-500: #ef4444; /* Rojo para errores */
+    --danger-600: #dc2626;
+
+    /* Colores de gris */
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    /* Sombras */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Bordes redondeados */
+    --border-radius-sm: 0.25rem;
+    --border-radius-md: 0.375rem;
+    --border-radius-lg: 0.5rem;
+}
+
+/* ===================================================================
+   ESTILOS GENERALES DEL PANEL
+   =================================================================== */
+.panel-profesor-container {
+    padding: 2rem;
+    background-color: var(--gray-50);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 1200px; /* Ajusta según sea necesario */
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.admin-panel-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(to bottom right, var(--primary-50), var(--primary-100));
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* ===================================================================
+   ESTILOS DE LAS TARJETAS (CARDS)
+   =================================================================== */
+.admin-header-card,
+.data-card,
+.stats-card {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden; /* Asegura que el contenido respete el border-radius */
+}
+
+.admin-header-card {
+    background: linear-gradient(to right, var(--primary-600), var(--primary-500));
+    color: white;
+    padding: 1.5rem;
+}
+
+.admin-header-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.admin-header-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.data-card-header {
+    background-color: var(--gray-100);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.data-card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+.data-card-body {
+    padding: 1.5rem;
+    background-color: white;
+}
+
+/* ===================================================================
+   ESTILOS DE LA TABLA
+   =================================================================== */
+.data-table {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    border-color: var(--gray-200);
+}
+
+.table-header {
+    background-color: var(--primary-500);
+    color: white;
+}
+
+.data-table thead th {
+    border-bottom: 2px solid var(--primary-700);
+    padding: 12px 15px;
+    font-weight: 600;
+}
+
+.data-table tbody td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    border-color: var(--gray-200);
+}
+
+.data-table tbody tr:nth-of-type(even) {
+    background-color: var(--gray-50);
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--primary-100);
+}
+
+/* ===================================================================
+   ESTILOS DE BOTONES
+   =================================================================== */
+.action-button {
+    border-radius: var(--border-radius-sm);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.action-button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
+}
+
+.action-button-sm {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: var(--border-radius-sm);
+}
+
+/* Nuevos estilos para botones específicos del profesor */
+.btn-info {
+    background-color: var(--info-500);
+    border-color: var(--info-500);
+}
+
+.btn-info:hover {
+    background-color: var(--info-600);
+    border-color: var(--info-600);
+}
+
+.btn-primary {
+    background-color: var(--primary-500);
+    border-color: var(--primary-500);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-600);
+    border-color: var(--primary-600);
+}
+
+.btn-success {
+    background-color: var(--success-500);
+    border-color: var(--success-500);
+}
+
+.btn-success:hover {
+    background-color: var(--success-600);
+    border-color: var(--success-600);
+}
+
+.btn-danger {
+    background-color: var(--danger-500);
+    border-color: var(--danger-500);
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-600);
+    border-color: var(--danger-600);
+}
+
+/* ===================================================================
+   ESTILOS DE MODALES
+   =================================================================== */
+.modal-header-custom {
+    background-color: var(--primary-600);
+    color: white;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+}
+
+.modal-title-custom {
+    font-size: 1.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.modal-body-custom {
+    padding: 1.5rem;
+    background-color: var(--gray-50);
+}
+
+.modal-footer-custom {
+    background-color: var(--gray-100);
+    border-top: 1px solid var(--gray-200);
+    padding: 1rem 1.5rem;
+}
+
+/* ===================================================================
+   ESTILOS DE FORMULARIOS
+   =================================================================== */
+.form-label-custom {
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-control-custom {
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--gray-300);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: var(--gray-900);
+}
+
+.form-control-custom:focus {
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+}
+
+.form-select-custom {
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--gray-300);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: var(--gray-900);
+}
+
+.form-select-custom:focus {
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+}
+
+/* ===================================================================
+   BADGES
+   =================================================================== */
+.badge {
+    padding: 0.4em 0.6em;
+    font-size: 0.75em;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: var(--border-radius-sm);
+}
+
+.badge-custom-green {
+    background-color: var(--success-500);
+    color: white;
+}
+
+.badge-custom-blue {
+    background-color: var(--info-500);
+    color: white;
+}
+
+.badge-custom-red {
+    background-color: var(--danger-500);
+    color: white;
+}
+
+/* ===================================================================
+   ESTILOS RESPONSIVE
+   =================================================================== */
+@media (max-width: 768px) {
+    .panel-profesor-container {
+        padding: 1rem;
+    }
+
+    .admin-header-title {
+        font-size: 1.8rem;
+    }
+
+    .admin-header-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .data-card-title {
+        font-size: 1.3rem;
+    }
+
+    .data-table thead th,
+    .data-table tbody td {
+        padding: 8px !important;
+    }
+}
+
+/* ===================================================================
+   ACCESSIBILITY IMPROVEMENTS
+   =================================================================== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    .admin-header-card,
+    .data-card,
+    .stats-card {
+        border: 2px solid var(--gray-800) !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * ,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -14,7 +14,21 @@ const PanelAdmin = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [formData, setFormData] = useState({ nombre: "", duracion: "", horario: "" });
   const [editFormData, setEditFormData] = useState({ id: null, nombre: "", duracion: "", horario: "" });
-  const [newUserData, setNewUserData] = useState({ nombre: "", email: "", password: "", rol: "ESTUDIANTE" });
+  const [newUserData, setNewUserData] = useState({
+    nombre: "",
+    email: "",
+    password: "",
+    rol: "ESTUDIANTE",
+    // Nuevos campos para Estudiante y Profesor
+    apellido: "",
+    especialidad: "", // Para Profesor
+    numeroIdentificacion: "", // Para Estudiante
+    direccion: "", // Para Estudiante
+    telefono: "", // Para Estudiante
+    fechaNacimiento: "", // Para Estudiante (formato YYYY-MM-DD)
+    fotoPerfil: "", // Para Estudiante (URL o base64 si manejas subidas directas, por ahora solo URL)
+    cursosIds: [], // Para Profesor (lista de IDs de cursos seleccionados)
+  });
   const [error, setError] = useState("");
   const [rol, setRol] = useState("");
   const navigate = useNavigate();
@@ -98,13 +112,38 @@ const PanelAdmin = () => {
     try {
       const token = getToken();
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await api.post("api/auth/register", newUserData, config);
+      // Adaptar los datos según el rol
+      let userDataToSend = { ...newUserData };
+      if (userDataToSend.rol === "ESTUDIANTE") {
+        delete userDataToSend.especialidad;
+        delete userDataToSend.cursosIds;
+      } else if (userDataToSend.rol === "PROFESOR") {
+        delete userDataToSend.numeroIdentificacion;
+        delete userDataToSend.direccion;
+        delete userDataToSend.telefono;
+        delete userDataToSend.fechaNacimiento;
+        delete userDataToSend.fotoPerfil;
+      } else if (userDataToSend.rol === "ADMIN") {
+        // Los administradores no necesitan los campos adicionales de estudiante o profesor
+        delete userDataToSend.apellido;
+        delete userDataToSend.especialidad;
+        delete userDataToSend.numeroIdentificacion;
+        delete userDataToSend.direccion;
+        delete userDataToSend.telefono;
+        delete userDataToSend.fechaNacimiento;
+        delete userDataToSend.fotoPerfil;
+        delete userDataToSend.cursosIds;
+      }
+
+      await api.post("api/auth/register", userDataToSend, config);
       setShowUserModal(false);
-      setNewUserData({ nombre: "", email: "", password: "", rol: "ESTUDIANTE" });
+      setNewUserData({ nombre: "", email: "", password: "", rol: "ESTUDIANTE", apellido: "", especialidad: "", numeroIdentificacion: "", direccion: "", telefono: "", fechaNacimiento: "", fotoPerfil: "", cursosIds: [] });
       fetchData();
+      toast.success("Usuario creado exitosamente!");
     } catch (error) {
       console.error("Error creando usuario:", error);
       setError("Error creando usuario. " + (error.response?.data?.message || error.message));
+      toast.error("Error creando usuario.");
     }
   };
 
@@ -129,7 +168,7 @@ const PanelAdmin = () => {
                     </div>
                     <div>
                       <h2 className="mb-0 admin-title">Panel de Administrador</h2>
-                      <p className="mb-0 text-muted">Gestión de usuarios y cursos</p>
+                      <p className="mb-0">Gestión de usuarios y cursos</p>
                     </div>
                   </div>
                   <div className="d-flex align-items-center">
@@ -480,14 +519,27 @@ const PanelAdmin = () => {
               <Form.Group className="mb-3">
                 <Form.Label className="form-label-custom">
                   <i className="fas fa-user me-2"></i>
-                  Nombre Completo
+                  Nombre
                 </Form.Label>
                 <Form.Control
                   type="text"
                   className="form-control-custom"
-                  placeholder="Ingrese el nombre completo"
+                  placeholder="Ingrese el nombre"
                   value={newUserData.nombre}
                   onChange={(e) => setNewUserData({ ...newUserData, nombre: e.target.value })}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label className="form-label-custom">
+                  <i className="fas fa-user me-2"></i>
+                  Apellido
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  className="form-control-custom"
+                  placeholder="Ingrese el apellido"
+                  value={newUserData.apellido}
+                  onChange={(e) => setNewUserData({ ...newUserData, apellido: e.target.value })}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -531,6 +583,117 @@ const PanelAdmin = () => {
                   <option value="ADMIN">👨‍💼 Administrador</option>
                 </Form.Select>
               </Form.Group>
+
+              {newUserData.rol === "ESTUDIANTE" && (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-custom">
+                      <i className="fas fa-id-card me-2"></i>
+                      Número de Identificación
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      className="form-control-custom"
+                      placeholder="Ingrese número de identificación"
+                      value={newUserData.numeroIdentificacion}
+                      onChange={(e) => setNewUserData({ ...newUserData, numeroIdentificacion: e.target.value })}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-custom">
+                      <i className="fas fa-map-marker-alt me-2"></i>
+                      Dirección
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      className="form-control-custom"
+                      placeholder="Ingrese la dirección"
+                      value={newUserData.direccion}
+                      onChange={(e) => setNewUserData({ ...newUserData, direccion: e.target.value })}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-custom">
+                      <i className="fas fa-phone me-2"></i>
+                      Teléfono
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      className="form-control-custom"
+                      placeholder="Ingrese el número de teléfono"
+                      value={newUserData.telefono}
+                      onChange={(e) => setNewUserData({ ...newUserData, telefono: e.target.value })}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-custom">
+                      <i className="fas fa-calendar-alt me-2"></i>
+                      Fecha de Nacimiento
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      className="form-control-custom"
+                      value={newUserData.fechaNacimiento}
+                      onChange={(e) => setNewUserData({ ...newUserData, fechaNacimiento: e.target.value })}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-custom">
+                      <i className="fas fa-image me-2"></i>
+                      URL Foto de Perfil
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      className="form-control-custom"
+                      placeholder="URL de la foto de perfil"
+                      value={newUserData.fotoPerfil}
+                      onChange={(e) => setNewUserData({ ...newUserData, fotoPerfil: e.target.value })}
+                    />
+                  </Form.Group>
+                </>
+              )}
+
+              {newUserData.rol === "PROFESOR" && (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-custom">
+                      <i className="fas fa-flask me-2"></i>
+                      Especialidad
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      className="form-control-custom"
+                      placeholder="Ingrese la especialidad"
+                      value={newUserData.especialidad}
+                      onChange={(e) => setNewUserData({ ...newUserData, especialidad: e.target.value })}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-custom">
+                      <i className="fas fa-book-reader me-2"></i>
+                      Cursos Asignados
+                    </Form.Label>
+                    <Form.Select
+                      multiple
+                      className="form-control-custom"
+                      value={newUserData.cursosIds}
+                      onChange={(e) => {
+                        const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
+                        setNewUserData({ ...newUserData, cursosIds: selectedOptions });
+                      }}
+                    >
+                      {cursos.map((curso) => (
+                        <option key={curso.id} value={curso.id}>
+                          {curso.nombre}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Text className="text-muted">
+                      Selecciona uno o más cursos.
+                    </Form.Text>
+                  </Form.Group>
+                </>
+              )}
             </Form>
           </Modal.Body>
           <Modal.Footer className="modal-footer-custom">
