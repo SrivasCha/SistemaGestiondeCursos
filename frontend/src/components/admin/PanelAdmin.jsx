@@ -18,7 +18,7 @@ const PanelAdmin = () => {
     nombre: "",
     email: "",
     password: "",
-    rol: "ESTUDIANTE",
+    rol: "ADMIN", // Cambiado de "ESTUDIANTE" a "ADMIN"
     // Nuevos campos para Estudiante y Profesor
     apellido: "",
     especialidad: "", // Para Profesor
@@ -31,6 +31,8 @@ const PanelAdmin = () => {
   });
   const [error, setError] = useState("");
   const [rol, setRol] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [showDeleteErrorModal, setShowDeleteErrorModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -107,7 +109,6 @@ const PanelAdmin = () => {
     }
   };
 
-
   const handleCreateUser = async () => {
     try {
       const token = getToken();
@@ -137,7 +138,7 @@ const PanelAdmin = () => {
 
       await api.post("api/auth/register", userDataToSend, config);
       setShowUserModal(false);
-      setNewUserData({ nombre: "", email: "", password: "", rol: "ESTUDIANTE", apellido: "", especialidad: "", numeroIdentificacion: "", direccion: "", telefono: "", fechaNacimiento: "", fotoPerfil: "", cursosIds: [] });
+      setNewUserData({ nombre: "", email: "", password: "", rol: "ADMIN", apellido: "", especialidad: "", numeroIdentificacion: "", direccion: "", telefono: "", fechaNacimiento: "", fotoPerfil: "", cursosIds: [] });
       fetchData();
       toast.success("Usuario creado exitosamente!");
     } catch (error) {
@@ -151,6 +152,31 @@ const PanelAdmin = () => {
     logout();
     navigate("/");
     window.location.reload();
+  };
+
+const handleDeleteUser = async (id) => {
+  if (!window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) return;
+  try {
+    const token = getToken();
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    await api.delete(`api/admin/usuarios/${id}`, config);
+    fetchData(); // Refrescar lista
+    toast.success("Usuario eliminado exitosamente!");
+    setDeleteError(""); // limpiar errores si todo va bien
+  } catch (error) {
+    console.error("Error eliminando usuario:", error);
+    const message = error.response?.data || "No se pudo eliminar el usuario porque tiene datos relacionados, como cursos o inscripciones.";
+    setDeleteError(message);
+    setShowDeleteErrorModal(true);
+
+  }
+};
+
+
+  // Función para manejar la selección múltiple de cursos para profesores
+  const handleCursosSelection = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+    setNewUserData({ ...newUserData, cursosIds: selectedOptions });
   };
 
   return (
@@ -201,6 +227,18 @@ const PanelAdmin = () => {
             </Col>
           </Row>
         )}
+
+        {deleteError && (
+  <Row className="mb-4">
+    <Col>
+      <Alert variant="warning" onClose={() => setDeleteError("")} dismissible className="custom-alert">
+        <i className="fas fa-exclamation-circle me-2"></i>
+        {deleteError}
+      </Alert>
+    </Col>
+  </Row>
+)}
+
 
         {/* Statistics Cards */}
         <Row className="mb-4">
@@ -257,6 +295,7 @@ const PanelAdmin = () => {
                         <th>Nombre</th>
                         <th>Email</th>
                         <th>Rol</th>
+                        <th>Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -288,6 +327,18 @@ const PanelAdmin = () => {
                               } me-1`}></i>
                               {user.rol}
                             </Badge>
+                          </td>
+                          <td>
+                            <div className="action-buttons">
+                              <Button 
+                                variant="outline-danger" 
+                                size="sm" 
+                                className="action-btn"
+                                onClick={() => handleDeleteUser(user.id)}
+                              >
+                                <i className="fas fa-trash"></i>
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -529,19 +580,24 @@ const PanelAdmin = () => {
                   onChange={(e) => setNewUserData({ ...newUserData, nombre: e.target.value })}
                 />
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label className="form-label-custom">
-                  <i className="fas fa-user me-2"></i>
-                  Apellido
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  className="form-control-custom"
-                  placeholder="Ingrese el apellido"
-                  value={newUserData.apellido}
-                  onChange={(e) => setNewUserData({ ...newUserData, apellido: e.target.value })}
-                />
-              </Form.Group>
+              
+              {/* Mostrar apellido solo si no es ADMIN */}
+              {newUserData.rol !== "ADMIN" && (
+                <Form.Group className="mb-3">
+                  <Form.Label className="form-label-custom">
+                    <i className="fas fa-user me-2"></i>
+                    Apellido
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    className="form-control-custom"
+                    placeholder="Ingrese el apellido"
+                    value={newUserData.apellido}
+                    onChange={(e) => setNewUserData({ ...newUserData, apellido: e.target.value })}
+                  />
+                </Form.Group>
+              )}
+              
               <Form.Group className="mb-3">
                 <Form.Label className="form-label-custom">
                   <i className="fas fa-envelope me-2"></i>
@@ -578,9 +634,9 @@ const PanelAdmin = () => {
                   value={newUserData.rol}
                   onChange={(e) => setNewUserData({ ...newUserData, rol: e.target.value })}
                 >
-                  <option value="ESTUDIANTE">👨‍🎓 Estudiante</option>
-                  <option value="PROFESOR">👨‍🏫 Profesor</option>
                   <option value="ADMIN">👨‍💼 Administrador</option>
+                  <option value="PROFESOR">👨‍🏫 Profesor</option>
+                  <option value="ESTUDIANTE">👨‍🎓 Estudiante</option>
                 </Form.Select>
               </Form.Group>
 
@@ -635,6 +691,8 @@ const PanelAdmin = () => {
                       className="form-control-custom"
                       value={newUserData.fechaNacimiento}
                       onChange={(e) => setNewUserData({ ...newUserData, fechaNacimiento: e.target.value })}
+                      style={{ cursor: 'pointer' }}
+                      onFocus={(e) => e.target.showPicker && e.target.showPicker()}
                     />
                   </Form.Group>
                   <Form.Group className="mb-3">
@@ -675,12 +733,11 @@ const PanelAdmin = () => {
                     </Form.Label>
                     <Form.Select
                       multiple
+                      size={Math.min(cursos.length, 5)}
                       className="form-control-custom"
                       value={newUserData.cursosIds}
-                      onChange={(e) => {
-                        const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
-                        setNewUserData({ ...newUserData, cursosIds: selectedOptions });
-                      }}
+                      onChange={handleCursosSelection}
+                      style={{ minHeight: '120px' }}
                     >
                       {cursos.map((curso) => (
                         <option key={curso.id} value={curso.id}>
@@ -689,8 +746,17 @@ const PanelAdmin = () => {
                       ))}
                     </Form.Select>
                     <Form.Text className="text-muted">
-                      Selecciona uno o más cursos.
+                      <i className="fas fa-info-circle me-1"></i>
+                      Mantén presionado Ctrl (Windows) o Cmd (Mac) para seleccionar múltiples cursos.
                     </Form.Text>
+                    {newUserData.cursosIds.length > 0 && (
+                      <div className="mt-2">
+                        <small className="text-success">
+                          <i className="fas fa-check me-1"></i>
+                          {newUserData.cursosIds.length} curso(s) seleccionado(s)
+                        </small>
+                      </div>
+                    )}
                   </Form.Group>
                 </>
               )}
@@ -707,6 +773,29 @@ const PanelAdmin = () => {
             </Button>
           </Modal.Footer>
         </Modal>
+
+        {/* Modal de error al eliminar usuario */}
+        <Modal show={showDeleteErrorModal} onHide={() => setShowDeleteErrorModal(false)} centered>
+          <Modal.Header closeButton>
+            <Modal.Title className="text-danger">
+              <i className="fas fa-exclamation-circle me-2"></i>
+              Error al eliminar usuario
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>{deleteError}</p>
+            <p className="text-muted small">
+              Verifica que el usuario no tenga cursos asignados o inscripciones activas.
+            </p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowDeleteErrorModal(false)}>
+              Cerrar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+
       </Container>
     </div>
   );

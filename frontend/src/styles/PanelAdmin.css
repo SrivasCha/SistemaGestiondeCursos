@@ -264,7 +264,7 @@ body {
   width: 100%;
   overflow: visible; /* Cambiado de hidden a visible */
   position: fixed;
-  margin-top: 80% !important; /* Ajustado para evitar superposición */
+  margin-top: 55% !important; /* Ajustado para evitar superposición */
   color: var(--primary-50) !important;
 }
 
