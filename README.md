@@ -63,7 +63,7 @@ El sistema ofrece las siguientes funcionalidades destacadas:
 
 ## 📁 Estructura del Proyecto
 
-La estructura del proyecto se organiza de la siguiente manera:
+El proyecto está organizado en una arquitectura modular para separar las responsabilidades del backend y el frontend. La estructura de directorios es la siguiente:
 
 sistema-gestion-cursos/
 ├── backend/
@@ -81,18 +81,18 @@ sistema-gestion-cursos/
 │   │   └── test/                 # 🧪 Pruebas unitarias y de integración
 │   └── pom.xml                   # 📝 Configuración Maven
 ├── frontend/
-│   ├── public/                   # 🖼️ Archivos estáticos
+│   ├── public/                   # 🖼️ Archivos estáticos (index.html, favicon, etc.)
 │   ├── src/
 │   │   ├── assets/               # 📂 Recursos estáticos (imágenes, iconos, etc.)
-│   │   ├── components/           # ⚛️ Componentes React (PanelProfesor.jsx, Login.jsx, etc.)
-│   │   ├── services/             # 📞 Servicios de API (api.js, authService.js)
-│   │   ├── styles/               # 🎨 Archivos CSS personalizados
-│   │   ├── App.jsx               # 🚀 Componente principal de la aplicación
-│   │   └── main.jsx              # ⚡ Punto de entrada de React (Vite)
-│   ├── index.html                # 📄 Archivo HTML principal
-│   └── package.json              # 📋 Configuración de dependencias npm/yarn
-├── README.md                     # 📖 ¡Este archivo!
-└── BD_Sistema-cursos.sql         # 🐘 Script de la base de datos MySQL
+│   │   ├── components/           # ⚛️ Componentes reutilizables de React
+│   │   ├── services/             # 📞 Lógica de interacción con la API (Axios) y autenticación
+│   │   ├── styles/               # 🎨 Hojas de estilo CSS personalizadas
+│   │   ├── App.jsx               # 🚀 Componente raíz de la aplicación React
+│   │   └── main.jsx              # ⚡ Punto de entrada principal de la aplicación
+│   ├── index.html                # 📄 Archivo HTML principal de la aplicación web
+│   └── package.json              # 📋 Definición de dependencias y scripts de Node.js
+├── README.md                     # 📖 ¡Este archivo de documentación!
+└── BD_Sistema-cursos.sql         # 🐘 Script SQL para la creación y configuración de la base de datos
 
 
 ## 🛠️ Requisitos Previos
