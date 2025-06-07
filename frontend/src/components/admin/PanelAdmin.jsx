@@ -12,6 +12,14 @@ const PanelAdmin = () => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editUserData, setEditUserData] = useState({
+    id: null,
+    nombre: "",
+    email: "",
+    rol: "",
+    password: ""
+  });
   const [formData, setFormData] = useState({ nombre: "", duracion: "", horario: "" });
   const [editFormData, setEditFormData] = useState({ id: null, nombre: "", duracion: "", horario: "" });
   const [newUserData, setNewUserData] = useState({
@@ -172,6 +180,41 @@ const handleDeleteUser = async (id) => {
   }
 };
 
+const handleEditUserClick = (user) => {
+  setEditUserData({
+    id: user.id,
+    nombre: user.nombre,
+    email: user.email,
+    rol: user.rol,
+    password: "",
+  });
+  setShowEditUserModal(true);
+};
+
+const handleUpdateUser = async () => {
+  try {
+    const token = getToken();
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+
+    const dataToSend = { ...editUserData };
+    if (!editUserData.password) {
+      delete dataToSend.password; // no incluir si está vacío
+    }
+
+    await api.put(`api/admin/usuarios/${editUserData.id}`, dataToSend, config);
+
+
+    setShowEditUserModal(false);
+    toast.success("Usuario actualizado correctamente");
+    fetchData(); // refrescar usuarios
+  } catch (error) {
+    console.error("Error actualizando usuario:", error);
+    toast.error("Error al actualizar usuario.");
+  }
+};
+
+
+
 
   // Función para manejar la selección múltiple de cursos para profesores
   const handleCursosSelection = (e) => {
@@ -330,10 +373,17 @@ const handleDeleteUser = async (id) => {
                           </td>
                           <td>
                             <div className="action-buttons">
-                              <Button 
-                                variant="outline-danger" 
-                                size="sm" 
-                                className="action-btn"
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                className="me-2"
+                                onClick={() => handleEditUserClick(user)}
+                              >
+                                <i className="fas fa-edit"></i>
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
                                 onClick={() => handleDeleteUser(user.id)}
                               >
                                 <i className="fas fa-trash"></i>
@@ -791,6 +841,63 @@ const handleDeleteUser = async (id) => {
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowDeleteErrorModal(false)}>
               Cerrar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal show={showEditUserModal} onHide={() => setShowEditUserModal(false)} className="custom-modal" centered>
+          <Modal.Header closeButton className="modal-header-custom">
+            <Modal.Title>
+              <i className="fas fa-user-edit me-2"></i>
+              Editar Usuario
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="modal-body-custom">
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Nombre</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={editUserData.nombre}
+                  onChange={(e) => setEditUserData({ ...editUserData, nombre: e.target.value })}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={editUserData.email}
+                  onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+              <Form.Label>Contraseña (dejar en blanco para no cambiar)</Form.Label>
+              <Form.Control
+                type="password"
+                value={editUserData.password}
+                onChange={(e) => setEditUserData({ ...editUserData, password: e.target.value })}
+                placeholder="Nueva contraseña"
+              />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Rol</Form.Label>
+                <Form.Select
+                  value={editUserData.rol}
+                  onChange={(e) => setEditUserData({ ...editUserData, rol: e.target.value })}
+                >
+                  <option value="ADMIN">Administrador</option>
+                  <option value="PROFESOR">Profesor</option>
+                  <option value="ESTUDIANTE">Estudiante</option>
+                </Form.Select>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer className="modal-footer-custom">
+            <Button variant="secondary" onClick={() => setShowEditUserModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleUpdateUser}>
+              Guardar Cambios
             </Button>
           </Modal.Footer>
         </Modal>
