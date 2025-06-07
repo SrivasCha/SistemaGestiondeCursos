@@ -1,4 +1,6 @@
 # 📚 Sistema de Gestión de Cursos y Notas
+# Por: Santiago Rivas, Sebastian Sanabria, Eneimes Quintero. Grupo E191 Aplicaciones Empresariales.
+
 
 [![GitHub last commit](https://img.shields.io/github/last-commit/ByteNexOfi/SistemaGestiondeCursos)](https://github.com/ByteNexOfi/SistemaGestiondeCursos)
 [![GitHub issues](https://img.shields.io/github/issues/ByteNexOfi/SistemaGestiondeCursos)](https://github.com/ByteNexOfi/SistemaGestiondeCursos/issues)
