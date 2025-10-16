@@ -1,68 +1,311 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* ========================================
+ * ESTILOS GLOBALES BASE
+ * ======================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #0f172a;
+  color: #f1f5f9;
+  line-height: 1.6;
+  overflow-x: hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+/* ========================================
+ * UTILIDADES DE BOOTSTRAP PERSONALIZADAS
+ * ======================================== */
+
+/* Mejoras para el grid de Bootstrap */
+.container-fluid {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 1200px) {
+  .container-fluid {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* ========================================
+ * MEJORAS PARA MODALS
+ * ======================================== */
+.modal-content {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-title {
+  color: white;
+  font-weight: 700;
+}
+
+.modal-body {
+  color: #e2e8f0;
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* ========================================
+ * MEJORAS PARA ALERTS
+ * ======================================== */
+.alert {
+  border-radius: 12px;
+  border: none;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  padding: 1rem 1.25rem;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.alert-success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+  color: #6ee7b7;
+  border-left: 4px solid #10b981;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+  color: #fca5a5;
+  border-left: 4px solid #ef4444;
+}
+
+.alert-warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+  color: #fcd34d;
+  border-left: 4px solid #f59e0b;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+  color: #7dd3fc;
+  border-left: 4px solid #0ea5e9;
+}
+
+/* ========================================
+ * MEJORAS PARA SPINNERS Y LOADING
+ * ======================================== */
+.spinner-border {
+  border-width: 3px;
+}
+
+.spinner-border-sm {
+  border-width: 2px;
+}
+
+/* ========================================
+ * MEJORAS PARA PAGINATION
+ * ======================================== */
+.pagination {
+  gap: 0.5rem;
+}
+
+.page-item .page-link {
+  background: var(--dark-bg-tertiary, #334155);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.page-item .page-link:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+  border-color: #2563eb;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+
+.page-item.active .page-link {
+  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+  border-color: #2563eb;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+
+.page-item.disabled .page-link {
+  background: var(--dark-bg-secondary, #1e293b);
+  border-color: rgba(100, 116, 139, 0.2);
+  color: #64748b;
+  opacity: 0.5;
+}
+
+/* ========================================
+ * MEJORAS PARA TOOLTIPS Y POPOVERS
+ * ======================================== */
+.tooltip-inner {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 1px solid rgba(37, 99, 235, 0.5);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+ * UTILIDADES PERSONALIZADAS
+ * ======================================== */
+.text-gradient-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-glass {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.shadow-blue {
+  box-shadow: 0 10px 30px -5px rgba(37, 99, 235, 0.3);
+}
+
+.shadow-cyan {
+  box-shadow: 0 10px 30px -5px rgba(6, 182, 212, 0.3);
+}
+
+/* ========================================
+ * ANIMACIONES DE ENTRADA
+ * ======================================== */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-  a:hover {
-    color: #747bff;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.animate-slide-down {
+  animation: slideInDown 0.6s ease-out;
+}
+
+.animate-fade-scale {
+  animation: fadeInScale 0.6s ease-out;
+}
+
+/* ========================================
+ * MEJORAS RESPONSIVE
+ * ======================================== */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  .card-body {
+    padding: 1.25rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* ========================================
+ * PRINT STYLES
+ * ======================================== */
+@media print {
+  .navbar,
+  .btn,
+  .sidebar,
+  footer {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .card {
+    border: 1px solid #ddd;
+    box-shadow: none;
   }
 }
